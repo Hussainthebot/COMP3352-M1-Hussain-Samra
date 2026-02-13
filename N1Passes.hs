@@ -9,7 +9,7 @@ import CompilerPasses
 -- =====================================================
 
 -- | Pull the final Result out of a uniquify CompilerResult
-getResult :: CompilerResult UniquifyState N1 -> Result N1
+getResult :: CompilerResult UniquifyState Program -> Result Program
 getResult (CState _ (Right p)) = Right p
 getResult (CState _ err)       = err
 
@@ -27,7 +27,7 @@ data UniquifyState = UState (Env String) Integer
 type UniquifyResult = CompilerResult UniquifyState Exp
 
 -- | Top-level uniquify entry point
-uniquify :: N1 -> CompilerResult UniquifyState N1
+uniquify :: Program -> CompilerResult UniquifyState Program
 uniquify (Program exp) =
   case uniquifyExp exp (UState Env.makeEnv 0) of
     CState state (Right exp') -> CState state $ Right $ Program exp'
@@ -109,7 +109,7 @@ type AtmResult = CompilerResult RCOState (Exp, [(String, Exp)])
 
 -- | Top-level entry point for the RCO pass.
 --   Accepts a CompilerResult so the counter is threaded naturally.
-passRemoveComplexOperas :: CompilerResult RCOState N1 -> CompilerResult RCOState N1
+passRemoveComplexOperas :: CompilerResult RCOState Program -> CompilerResult RCOState Program
 passRemoveComplexOperas (CState symCount (Right (Program expr))) =
   case rcoExp (CState symCount (Right expr)) of
     CState symCount' (Right exp') -> CState symCount' $ Right $ Program exp'
