@@ -9,8 +9,6 @@ import qualified Data.Map as M
 
 -- =====================================================
 -- ENVIRONMENT (SYMBOL TABLE)
-
--- hi
 -- =====================================================
 -- This module is used by COMPILER PASSES.
 -- It maps names to metadata (usually other names).
