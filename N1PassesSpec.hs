@@ -201,3 +201,6 @@ spec = do
           (Let "x" (Let "s0" (Negate (Int 1)) (Add (Var "s0") (Int 2)))
             (Let "y" (Let "s1" (Negate (Int 3)) (Add (Var "s1") (Int 4)))
               (Add (Var "x") (Var "y")))))
+
+main :: IO ()
+main = hspec spec
