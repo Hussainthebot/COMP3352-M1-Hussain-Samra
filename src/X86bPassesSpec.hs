@@ -1,30 +1,30 @@
 module X86bPassesSpec (spec) where
 
 import Test.Hspec
-import X86bPasses
 import CompilerPasses
-import C0
+import X86Passes.X86bPasses
+import qualified CPasses.C0 as C0
 import X86b
 
 spec :: Spec
 spec = do
   describe "X86b Passes Tests:" $ do
     it "can translate C0 return on an int" $ do
-      instructionSelection (C0.Program [("start", Return (Atm $ C0.Int 3))]) [] `shouldBe`
+      instructionSelection (C0.Program [("start", C0.Return (C0.Atm $ C0.Int 3))]) [] `shouldBe`
         Right (SIPass (X86b.Program
           [(Label "start", Block
             [Movq (Imm 3) (Reg RAX),
              Jmp (Label "conclusion")])], []))
 
     it "can translate C0 return on a var" $ do
-      instructionSelection (C0.Program [("start", Return (Atm $ C0.Var "x"))]) ["x"] `shouldBe`
+      instructionSelection (C0.Program [("start", C0.Return (C0.Atm $ C0.Var "x"))]) ["x"] `shouldBe`
         Right (SIPass (X86b.Program
           [(Label "start", Block
             [Movq (X86b.Var "x") (Reg RAX),
              Jmp (Label "conclusion")])], ["x"]))
 
     it "can translate C0 return on a imm sub" $ do
-      instructionSelection (C0.Program [("start", Return (Sub $ C0.Int 2))]) [] `shouldBe`
+      instructionSelection (C0.Program [("start", C0.Return (C0.Sub $ C0.Int 2))]) [] `shouldBe`
         Right (SIPass (X86b.Program
           [(Label "start", Block
             [Movq (Imm 2) (Reg RAX),
@@ -32,7 +32,7 @@ spec = do
              Jmp (Label "conclusion")])], []))
 
     it "can translate C0 return on a imm add" $ do
-      instructionSelection (C0.Program [("start", Return (Add (C0.Int 2) (C0.Int 3)))]) [] `shouldBe`
+      instructionSelection (C0.Program [("start", C0.Return (C0.Add (C0.Int 2) (C0.Int 3)))]) [] `shouldBe`
         Right (SIPass (X86b.Program
           [(Label "start", Block
             [Movq (Imm 2) (Reg RAX),
@@ -40,7 +40,7 @@ spec = do
              Jmp (Label "conclusion")])], []))
 
     it "can translate C0 an assign followed by return" $ do
-      instructionSelection (C0.Program [("start", Seq (Assign "x" (Atm $ C0.Int 5)) (Return (Atm $ C0.Var "x")))]) ["x"] `shouldBe`
+      instructionSelection (C0.Program [("start", C0.Seq (C0.Assign "x" (C0.Atm $ C0.Int 5)) (C0.Return (C0.Atm $ C0.Var "x")))]) ["x"] `shouldBe`
         Right (SIPass (X86b.Program
           [(Label "start", Block
             [Movq (Imm 5) (X86b.Var "x"),
@@ -49,9 +49,9 @@ spec = do
 
     it "can translate C0 multiple assigns followed by return" $ do
       instructionSelection (C0.Program [("start",
-        Seq (Assign "x" (Atm $ C0.Int 5))
-          (Seq (Assign "y" (Atm $ C0.Int 6))
-            (Return (C0.Add (C0.Var "x") (C0.Var "y")))))]) ["x","y"] `shouldBe`
+        C0.Seq (C0.Assign "x" (C0.Atm $ C0.Int 5))
+          (C0.Seq (C0.Assign "y" (C0.Atm $ C0.Int 6))
+            (C0.Return (C0.Add (C0.Var "x") (C0.Var "y")))))]) ["x","y"] `shouldBe`
         Right (SIPass (X86b.Program
           [(Label "start", Block
             [Movq (Imm 5) (X86b.Var "x"),
@@ -64,8 +64,8 @@ spec = do
     it "can translate C0 read followed by return" $ do
       instructionSelection (C0.Program
         [("start",
-          Seq (Assign "x" Read)
-              (Return (Atm $ C0.Var "x")))]) ["x"] `shouldBe`
+          C0.Seq (C0.Assign "x" C0.Read)
+              (C0.Return (C0.Atm $ C0.Var "x")))]) ["x"] `shouldBe`
         Right (SIPass (X86b.Program
           [(Label "start", Block
             [Callq (Label "read_int") 0,
