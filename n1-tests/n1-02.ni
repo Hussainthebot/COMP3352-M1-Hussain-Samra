@@ -1,0 +1,2 @@
+// negated number
+-24

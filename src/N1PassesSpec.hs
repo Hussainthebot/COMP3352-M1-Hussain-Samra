@@ -3,7 +3,7 @@ module N1PassesSpec (spec) where
 import Test.Hspec
 import Data.Int
 import CompilerPasses
-import N1Passes
+import NiPasses.N1Passes
 import N1
 
 uniquifyResult = getResult . uniquify

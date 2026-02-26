@@ -1,0 +1,52 @@
+cabal-version:       2.2
+
+name:                COMP3352-Lab5
+version:             0.1.0.0
+-- synopsis:
+-- description:
+homepage:            https://github.com/githubuser/COMP3352-Lab5#readme
+license:             BSD-3-Clause
+license-file:        LICENSE
+author:              Author name here
+maintainer:          example@example.com
+copyright:           2026 Author name here
+category:            Web
+build-type:          Simple
+extra-source-files:  README.md
+                     CHANGELOG.md
+
+executable COMP3352-Lab5
+  hs-source-dirs:      src
+  main-is:             Main.hs
+  default-language:    Haskell2010
+  build-depends:       base >= 4.7 && < 5,
+                       containers,
+                       optparse-applicative,
+                       hashable
+  other-modules:       CompilerPasses,
+                       ComposePasses,
+                       Env,
+                       N1,
+                       NiPasses.N1Passes,
+                       Parsers.NiParser,
+                       Parsers.CParser,
+                       X86Passes.WriteToFile,
+                       CPasses.C0,
+                       CPasses.C0Passes,
+                       AssignHomes,
+                       PatchInstructions,
+                       X86b,
+                       X86Passes.X86bPasses
+  ghc-options:         -Wall
+                       -Wcompat
+                       -Widentities
+                       -Wincomplete-record-updates
+                       -Wincomplete-uni-patterns
+                       -Wmissing-export-lists
+                       -Wmissing-home-modules
+                       -Wpartial-fields
+                       -Wredundant-constraints
+
+source-repository head
+  type:     git
+  location: https://github.com/githubuser/COMP3352-Lab5

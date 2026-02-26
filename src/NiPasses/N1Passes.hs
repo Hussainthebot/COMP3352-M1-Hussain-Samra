@@ -1,4 +1,4 @@
-module N1Passes where
+module NiPasses.N1Passes where
 import N1
 import Env
 import CompilerPasses
