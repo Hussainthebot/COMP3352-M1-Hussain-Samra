@@ -32,7 +32,8 @@ executable COMP3352-Lab5
                        AssignHomes,
                        PatchInstructions,
                        X86b,
-                       X86Passes.X86bPasses
+                       X86Passes.X86bPasses,
+                       X86Passes.Liveness
 
 test-suite spec
   type:                exitcode-stdio-1.0
@@ -59,4 +60,6 @@ test-suite spec
                        X86b,
                        X86Passes.X86bPasses,
                        C0PassesSpec,
-                       X86bPassesSpec
+                       X86bPassesSpec,
+                       X86Passes.Liveness,
+                       X86Passes.LivenessSpec

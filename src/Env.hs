@@ -1,11 +1,9 @@
 module Env
-  ( Env
+  ( Env(..)
   , makeEnv
   , lookupEnv
   , extendEnv
   ) where
-
-import qualified Data.Map as M
 
 -- =====================================================
 -- ENVIRONMENT (SYMBOL TABLE)
@@ -15,17 +13,17 @@ import qualified Data.Map as M
 -- It NEVER stores runtime values.
 -- =====================================================
 
-newtype Env a = Env (M.Map String a)
+newtype Env a = Env [(String, a)]
   deriving (Eq, Show)
 
 -- Create an empty environment
 makeEnv :: Env a
-makeEnv = Env M.empty
+makeEnv = Env []
 
 -- Look up a name in the environment
 lookupEnv :: String -> Env a -> Maybe a
-lookupEnv x (Env m) = M.lookup x m
+lookupEnv x (Env pairs) = lookup x pairs
 
 -- Extend the environment with a new binding
 extendEnv :: String -> a -> Env a -> Env a
-extendEnv x v (Env m) = Env (M.insert x v m)
+extendEnv x v (Env pairs) = Env ((x, v) : pairs)

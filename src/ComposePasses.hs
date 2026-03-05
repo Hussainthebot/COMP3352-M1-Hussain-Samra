@@ -30,10 +30,10 @@ removeComplexOperasPass (prog, symCount) =
 explicateControlPass :: Program -> Result ECPass
 explicateControlPass = explicateControl
 
--- Instruction Selection
+-- Instruction Selection (with prelude/conclusion for full pipeline)
 instructionSelectionPass :: ECPass -> Result SIPass
 instructionSelectionPass (ECPass c0 locals) =
-  instructionSelection c0 locals
+  X86Passes.X86bPasses.instructionSelectionWithPrelude c0 locals
 
 -- Assign Homes
 assignHomesPassWrapper :: SIPass -> Result AHPass
