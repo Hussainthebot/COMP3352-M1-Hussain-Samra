@@ -70,15 +70,12 @@ getLocs (Subq src dst) =
 getLocs (Negq dst) =
   getRWs SrcDst dst
 
--- Pushq: reads RSP and the argument, writes RSP
 getLocs (Pushq a) =
   RW (Set.fromList [Reg RSP, a]) (Set.singleton (Reg RSP))
 
--- Popq: reads RSP, writes RSP and the argument
 getLocs (Popq a) =
   RW (Set.singleton (Reg RSP)) (Set.fromList [Reg RSP, a])
 
--- Retq: reads and writes RSP (pops return address off stack)
 getLocs Retq =
   RW (Set.singleton (Reg RSP)) (Set.singleton (Reg RSP))
 
@@ -86,7 +83,7 @@ getLocs (Jmp _) =
   mempty
 
 getLocs (Callq _ arity) =
-  let rs = Set.fromList (map Reg (take (fromInteger arity) argRegs))
+  let rs = Set.fromList (map Reg (take (fromIntegral arity) argRegs))
       ws = Set.fromList (map Reg callerSaved)
   in RW rs ws
 
@@ -108,7 +105,7 @@ liveBefore env instr after =
       let RW r w = getLocs instr
       in Set.union r (Set.difference after w)
 
--- Correct backward traversal producing the EXACT order expected by LivenessSpec:
+-- Returns:
 -- [entryLiveSet, liveAfter(i1), liveAfter(i2), ..., liveAfter(last)]
 liveSets :: Env [Set Arg] -> [Instr] -> [Set Arg]
 liveSets env instrs =
@@ -137,14 +134,14 @@ uncoverLive (Program blocks) =
       blocks' = mains ++ rest
 
       emptyEnv :: Env [Set Arg]
-      emptyEnv = foldr (\(Label l, _) e -> Env.extendEnv l [] e)
-                       Env.makeEnv blocks'
+      emptyEnv =
+        foldr (\(Label l, _) e -> Env.extendEnv l [] e) Env.makeEnv blocks'
 
       step :: Env [Set Arg] -> Env [Set Arg]
       step env =
         foldl
           (\e (Label l, blk) ->
-              Env.extendEnv l (uncoverLiveBlock env blk) e)
+             Env.extendEnv l (uncoverLiveBlock env blk) e)
           Env.makeEnv
           blocks'
 
