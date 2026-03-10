@@ -18,7 +18,8 @@ executable COMP3352-Lab5
   build-depends:       base >= 4.7 && < 5,
                        containers,
                        optparse-applicative,
-                       hashable
+                       hashable,
+                       unordered-containers
   other-modules:       CompilerPasses,
                        ComposePasses,
                        Env,
@@ -33,7 +34,9 @@ executable COMP3352-Lab5
                        PatchInstructions,
                        X86b,
                        X86Passes.X86bPasses,
-                       X86Passes.Liveness
+                       X86Passes.Liveness,
+                       X86Passes.InterferenceGraph,
+                       Graph.Graph
 
 test-suite spec
   type:                exitcode-stdio-1.0
@@ -44,7 +47,8 @@ test-suite spec
                        hspec,
                        containers,
                        optparse-applicative,
-                       hashable
+                       hashable,
+                       unordered-containers
   other-modules:       CompilerPasses,
                        ComposePasses,
                        Env,

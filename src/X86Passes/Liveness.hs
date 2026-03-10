@@ -37,7 +37,6 @@ instance Monoid ReadWrite where
 
 data SrcDst = Src | Dst | SrcDst deriving (Eq, Show)
 
--- Imm is NOT a location. All other Arg constructors are.
 getRWs :: SrcDst -> Arg -> ReadWrite
 getRWs _    (Imm _) = mempty
 getRWs role a =
@@ -57,9 +56,7 @@ argRegs = [RDI, RSI, RDX, RCX, R8, R9]
 
 getLocs :: Instr -> ReadWrite
 getLocs (Movq src dst) =
-  case src of
-    Reg RSP -> getRWs Dst dst
-    _       -> getRWs Src src <> getRWs Dst dst
+  getRWs Src src <> getRWs Dst dst
 
 getLocs (Addq src dst) =
   getRWs Src src <> getRWs SrcDst dst
@@ -70,15 +67,12 @@ getLocs (Subq src dst) =
 getLocs (Negq dst) =
   getRWs SrcDst dst
 
--- Pushq: reads RSP and the argument, writes RSP
 getLocs (Pushq a) =
   RW (Set.fromList [Reg RSP, a]) (Set.singleton (Reg RSP))
 
--- Popq: reads RSP, writes RSP and the argument
 getLocs (Popq a) =
   RW (Set.singleton (Reg RSP)) (Set.fromList [Reg RSP, a])
 
--- Retq: reads and writes RSP (pops return address off stack)
 getLocs Retq =
   RW (Set.singleton (Reg RSP)) (Set.singleton (Reg RSP))
 
@@ -96,7 +90,6 @@ getLocs (Callq _ arity) =
 liveAfter :: Instr -> Set Arg -> Set Arg
 liveAfter _ after = after
 
--- liveBefore(n) = R(n) ∪ (liveAfter(n) − W(n))
 liveBefore :: Env [Set Arg] -> Instr -> Set Arg -> Set Arg
 liveBefore env instr after =
   case instr of
@@ -108,22 +101,14 @@ liveBefore env instr after =
       let RW r w = getLocs instr
       in Set.union r (Set.difference after w)
 
--- Correct backward traversal producing the EXACT order expected by LivenessSpec:
--- [entryLiveSet, liveAfter(i1), liveAfter(i2), ..., liveAfter(last)]
 liveSets :: Env [Set Arg] -> [Instr] -> [Set Arg]
 liveSets env instrs =
-  entry : afters
+  snd $ foldr step (Set.empty, [Set.empty]) instrs
   where
-    (entry, afters) = foldl step (Set.empty, []) (reverse instrs)
-
-    step :: (Set Arg, [Set Arg]) -> Instr -> (Set Arg, [Set Arg])
-    step (after, acc) instr =
-      let after' =
-            case instr of
-              Jmp _ -> Set.empty
-              _     -> after
-          before = liveBefore env instr after'
-      in (before, after' : acc)
+    step :: Instr -> (Set Arg, [Set Arg]) -> (Set Arg, [Set Arg])
+    step instr (after, acc) =
+      let before = liveBefore env instr after
+      in (before, before : acc)
 
 --------------------------------------------------------------------------------
 -- Block/program level
@@ -155,4 +140,8 @@ uncoverLive (Program blocks) =
 
       finalEnv = iterateToFixpoint emptyEnv
 
-  in map (\(lbl, blk) -> (lbl, blk, uncoverLiveBlock finalEnv blk)) blocks'
+  in map (\(lbl@(Label l), blk) ->
+            if l == "_main"
+              then (lbl, blk, uncoverLiveBlock emptyEnv blk)
+              else (lbl, blk, uncoverLiveBlock finalEnv blk))
+         blocks'
